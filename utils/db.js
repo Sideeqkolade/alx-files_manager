@@ -7,13 +7,21 @@ class DBClient {
     const database = process.env.DB_DATABASE || 'files_manager';
 
     // MongoDB connection URL
-    const url = `mongodb://${host}:${port}/${database}`;
+    const url = `mongodb://${host}:${port}`;
 
-    // create a mongoDB client
+    // Create a MongoDB client
     this.client = new MongoClient(url, { useUnifiedTopology: true });
 
-    // connect to a mongodDB server
-    this.client.connect();
+    // Connect to the MongoDB server
+    this.client.connect((err) => {
+      if (err) {
+        console.error('MongoDB Connection Error:', err);
+      } else {
+        console.log('Connected to MongoDB');
+        this.usersCollection = this.client.db(database).collection('users');
+        this.filesCollection = this.client.db(database).collection('files');
+      }
+    });
   }
 
   // Check if the connection to MongoDB is alive
@@ -23,12 +31,12 @@ class DBClient {
 
   // Asynchronous function to get the number of documents in the "users" collection
   async nbUsers() {
-    return this.client.db().collection('users').countDocuments();
+    return this.usersCollection.countDocuments();
   }
 
   // Asynchronous function to get the number of documents in the "files" collection
   async nbFiles() {
-    return this.client.db().collection('files').countDocuments();
+    return this.filesCollection.countDocuments();
   }
 }
 
