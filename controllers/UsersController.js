@@ -4,6 +4,7 @@ Controller
  */
 import sha1 from 'sha1';
 import { dbClient } from '../utils/db';
+import { redisClient } from '../utils/redis';
 
 class UsersController {
   static async postNew(req, res) {
@@ -12,16 +13,16 @@ class UsersController {
 
     // check if email and oassword are provided
     if (!email) {
-      res.status(400).json({ error: 'Missing email' });
+      return res.status(400).json({ error: 'Missing email' });
     }
     if (!password) {
-      res.status(400).json({ error: 'Missing pssword' });
+      return res.status(400).json({ error: 'Missing password' });
     }
 
     // check if email already exists in the database
     const existingUser = await dbClient.usersCollection.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ error: 'Already exists' });
+      return res.status(400).json({ error: 'Already exists' });
     }
 
     // Hash the password using SHA1
@@ -43,6 +44,31 @@ class UsersController {
     };
 
     return res.status(201).json(createdUser);
+  }
+
+  static async getMe(req, res) {
+    // retrieve the token from header
+    const token = req.header('X-Token');
+
+    // check if token is valid
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized'});
+    }
+    
+    // get the userId from redisClient via the token as key
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized'});
+    }
+
+    // get the user from dbCLient using the userId
+    const user = await dbClient.usersCollection.findOne({ _id: userId });
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized'});
+    }
+
+    // return the user object (email and id only)
+    return res.status(200).json({ email: user.email, id: user._id });
   }
 }
 
