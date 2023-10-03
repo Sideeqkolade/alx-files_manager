@@ -52,19 +52,19 @@ class UsersController {
 
     // check if token is valid
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized'});
+      return res.status(401).json({ error: 'Unauthorized' });
     }
-    
+
     // get the userId from redisClient via the token as key
     const userId = await redisClient.get(`auth_${token}`);
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized'});
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     // get the user from dbCLient using the userId
     const user = await dbClient.usersCollection.findOne({ _id: userId });
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized'});
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     // return the user object (email and id only)
