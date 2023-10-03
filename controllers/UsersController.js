@@ -48,7 +48,7 @@ class UsersController {
 
   static async getMe(req, res) {
     // retrieve the token from header
-    const token = req.header('X-Token');
+    const token = req.headers('X-Token');
 
     // check if token is valid
     if (!token) {

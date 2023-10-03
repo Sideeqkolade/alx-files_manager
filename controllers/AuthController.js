@@ -10,7 +10,7 @@ import redisClient from '../utils/redis';
 class AuthController {
   static async getConnect(req, res) {
     // get the authorization from header using request
-    const authHeader = req.header('Authorization');
+    const authHeader = req.headers('Authorization');
 
     // check for authorization or if it doesn't start with Basic
     if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -48,7 +48,7 @@ class AuthController {
   }
 
   static async getDisconnect(req, res) {
-    const token = req.header('X-Token');
+    const token = req.headers('X-Token');
 
     // check for token
     if (!token) {
@@ -63,7 +63,7 @@ class AuthController {
 
     // delete the token in Redis and return a status code 204
     await redisClient.del(`auth_${token}`);
-    return res.status(204).end();
+    return res.status(204).send();
   }
 }
 
